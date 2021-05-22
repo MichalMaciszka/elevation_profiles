@@ -15,9 +15,9 @@ def interpolation_function(points):
         for i in range(n - 1):
             x, y = points[i]
             row = vector.vector_zeros(4 * (n - 1))
-            row[4*i+3] = 1
-            A[4*i+3] = row
-            b[4*i+3] = float(y)
+            row[4 * i + 3] = 1
+            A[4 * i + 3] = vector.copy_vector(row)
+            b[4 * i + 3] = float(y)
         
         # Sj(xj+1) = f(xj+1)
         for i in range(n - 1):
@@ -30,7 +30,7 @@ def interpolation_function(points):
             row[4 * i + 2] = h
             row[4 * i + 3] = 1
 
-            A[4 * i + 2] = row
+            A[4 * i + 2] = row.copy()
             b[4 * i + 2] = float(y1)
 
         # Sj-1'(xj) = Sj'(xj)
@@ -44,8 +44,8 @@ def interpolation_function(points):
             row[4 * i + 2] = 1
             row[4 * (i + 1) + 2] = -1
 
-            A[4 * i] = row
-            b[4 * i] = 0.0
+            A[4 * i] = row.copy()
+            b[4 * i] = float(0)
 
         # Sj-1''(xj) = Sj''(xj)
         for i in range(n - 2):
@@ -57,25 +57,26 @@ def interpolation_function(points):
             row[4 * i + 1] = 2
             row[4 * (i + 1) + 1] = -2
 
-            A[4 * (i + 1) + 1] = row
-            b[4 * (i + 1) + 1] = 0.0
+            A[4 * (i + 1) + 1] = vector.copy_vector(row)
+            b[4 * (i + 1) + 1] = float(0)
 
         # S0''(x0) = 0, Sn-1''(xn-1) = 0
-        row = vector.vector_zeros[4 * (n - 1)]
+        row = vector.vector_zeros(4 * (n - 1))
         row[1] = 2
-        A[1] = row
+        A[1] = row.copy()
         b[1] = 0.0
 
-        row = vector.vector_zeros[4 * (n - 1)]
+        row = vector.vector_zeros(4 * (n - 1))
         x1, y1 = points[-1]
         x0, y0 = points[-2]
         h = float(x1) - float(x0)
         row[1] = 2
         row[-4] = 6 * h
-        A[-4] = row
+        A[-4] = vector.copy_vector(row)
         b[-4] = 0.0
 
-        return solving.lu_factor(A, b)
+        result = solving.lu_factor(A, b)
+        return result
     
     params = calculate_params()
 
@@ -93,18 +94,22 @@ def interpolation_function(points):
             xj, yj = points[i]
             if float(xi) <= x <= float(xj):
                 a, b, c, d = array[i - 1]
-                h = x - float(i)
-                return a * (h**3) + b * (h**2) + c * h + d
-        
+                h = x - float(xi)
+                val = a * (h**3) + b * (h**2) + c * h + d
+                # print(val)
+                return val
         return -999
     return f
 
+
 def interpolate_spline(k):
     for file in os.listdir("./data"):
-        print(file)
+        if file.find(".csv") == -1:
+            continue
         f = open("./data/" + file, 'r')
         data = list(csv.reader(f))
         data.pop(0)
+        # data = data[1:]
 
         shift = (-1) * (len(data) % k)
         if shift != 0:
@@ -130,7 +135,7 @@ def interpolate_spline(k):
             train_distance.append(float(x))
             train_h.append(float(y))
 
-        shift = -1 * interpolated_h[:shift].count(-999)
+        shift = (-1) * interpolated_h.count(-999)
 
         pyplot.plot(distance, h, 'r.', label="pelne dane")
         pyplot.plot(distance[:shift], interpolated_h[:shift], color="blue", label="funkcja interpolujaca")

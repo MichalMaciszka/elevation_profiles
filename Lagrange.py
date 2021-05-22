@@ -22,9 +22,12 @@ def interpolation_function(points):
         return res
     return f
 
+
 def interpolate_lagrange(k):
     for file in os.listdir("./data"):
         f = open("./data/" + file, 'r')
+        if file.find(".csv") == -1:
+            continue
         data = list(csv.reader(f))
 
         interpolation_data = data[1::k]
@@ -37,14 +40,15 @@ def interpolate_lagrange(k):
             x, y = point
             distance.append(float(x))
             h.append(float(y))
-            interpolated_h.append(F(float))
+            interpolated_h.append(F(float(x)))
 
         train_distance = []
         train_h = []
         for point in interpolation_data:
             x, y = point
-            train_distance.append(x)
-            train_h.append(y)
+            train_distance.append(float(x))
+            # train_h.append(F(float(x)))
+            train_h.append(float(y))
         
         # komentarz - aproksymacja bez oscylacji
         # n = math.floor(len(distance)/3)
@@ -59,7 +63,7 @@ def interpolate_lagrange(k):
         pyplot.legend()
         pyplot.ylabel("Wysokosc")
         pyplot.xlabel("Odleglosc")
-        pyplot.title("Przyblizenie interpolacja Lagranga \'a, " + str(len(interpolation_data)) + ' punktow')
+        pyplot.title("Przyblizenie interpolacja Lagranga, " + str(len(interpolation_data)) + ' punktow')
         pyplot.suptitle(file)
         pyplot.grid()
         pyplot.show()
