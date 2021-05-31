@@ -27,16 +27,11 @@ def lu_factor(a, b):
     vector_y = vector.vector_zeros(m)
 
     # pivot
-    for k in range(m):
-        max_row = k
-        max_val = abs(matrix_a[k][k])
-        for i in range(k + 1, m):
-            if abs(matrix_a[i][k]) > max_val:
-                max_row = i
-                max_val = matrix_a[i][k]
-        if max_row != k:
-            matrix_a[k], matrix_a[max_row] = matrix_a[max_row], matrix_a[k]
-            vector_b[k], vector_b[max_row] = vector_b[max_row], vector_b[k]
+    for j in range(m):
+        row = max(range(j, m), key=lambda i: abs(matrix_a[i][j]))
+        if j != row:
+            matrix_a[j], matrix_a[row] = matrix_a[row], matrix_a[j]
+            vector_b[j], vector_b[row] = vector_b[row], vector_b[j]
 
     # LUx = b
     for i in range(m):
@@ -64,7 +59,7 @@ def lu_factor(a, b):
             val -= matrix_u[i][j] * vector_x[j]
         vector_x[i] = val / matrix_u[i][i]
 
-    residuum = vector.vectors_sub(dot_product(matrix_a, vector_x), vector_b)
+    # residuum = vector.vectors_sub(dot_product(matrix_a, vector_x), vector_b)
     # norm = vector.norm(residuum)
     # print("-----LU-----")
     # print("Norma z residuum: ", norm)

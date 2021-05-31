@@ -2,6 +2,7 @@ import os
 import csv
 import matrix, vector, solving
 from matplotlib import pyplot
+import random
 
 
 def interpolation_function(points):
@@ -102,20 +103,29 @@ def interpolation_function(points):
     return f
 
 
-def interpolate_spline(k):
+def interpolate_spline(k, rand=False):
     for file in os.listdir("./data"):
         if file.find(".csv") == -1:
             continue
         f = open("./data/" + file, 'r')
         data = list(csv.reader(f))
         data.pop(0)
-        # data = data[1:]
 
         shift = (-1) * (len(data) % k)
         if shift != 0:
             interpolation_data = data[:shift:k]
         else:
             interpolation_data = data[::k]
+
+        if rand:
+            for i in range(len(interpolation_data)):
+                interpolation_data[i] = random.choice(data)
+            if shift != 0:
+                interpolation_data[0] = data[:shift:k][0]
+                interpolation_data[-1] = data[:shift:k][-1]
+            else:
+                interpolation_data[0] = data[::k][0]
+                interpolation_data[-1] = data[::k][-1]
         
         F = interpolation_function(interpolation_data)
         
@@ -137,9 +147,14 @@ def interpolate_spline(k):
 
         shift = (-1) * interpolated_h.count(-999)
 
-        pyplot.plot(distance, h, 'r.', label="pelne dane")
-        pyplot.plot(distance[:shift], interpolated_h[:shift], color="blue", label="funkcja interpolujaca")
-        pyplot.plot(train_distance, train_h, 'g.', label="dane do interpolacji")
+        if shift != 0:
+            pyplot.plot(distance[:shift], h[:shift], 'r.', label="pelne dane")
+            pyplot.plot(distance[:shift], interpolated_h[:shift], color="blue", label="funkcja interpolujaca")
+            pyplot.plot(train_distance, train_h, 'g.', label="dane do interpolacji")
+        else:
+            pyplot.plot(distance, h, 'r.', label="pelne dane")
+            pyplot.plot(distance, interpolated_h, color="blue", label="funkcja interpolujaca")
+            pyplot.plot(train_distance, train_h, 'g.', label="dane do interpolacji")
         pyplot.legend()
         pyplot.ylabel("Wysokosc")
         pyplot.xlabel("Odleglosc")

@@ -1,8 +1,7 @@
-import math
 import os
 import csv
 from matplotlib import pyplot
-import matplotlib
+import random
 
 
 def interpolation_function(points):
@@ -11,11 +10,9 @@ def interpolation_function(points):
         n = len(points)
         for i in range(n):
             xi, yi = points[i]
-            mult = 1
+            mult = 1.0
             for j in range(n):
-                if i == j:
-                    continue
-                else:
+                if i != j:
                     xj, yj = points[j]
                     mult *= (float(x) - float(xj))/(float(xi) - float(xj))
             res += float(yi) * mult
@@ -23,7 +20,7 @@ def interpolation_function(points):
     return f
 
 
-def interpolate_lagrange(k):
+def interpolate_lagrange(k, rand=False):
     for file in os.listdir("./data"):
         f = open("./data/" + file, 'r')
         if file.find(".csv") == -1:
@@ -31,6 +28,16 @@ def interpolate_lagrange(k):
         data = list(csv.reader(f))
 
         interpolation_data = data[1::k]
+
+        if rand:
+            for i in range(len(interpolation_data)):
+                x = random.choice(data[1::])
+                if x not in interpolation_data:
+                    interpolation_data[i] = x
+            interpolation_data[0] = data[1]
+            interpolation_data[-1] = data[-1]
+            interpolation_data = interpolation_data[1::]
+
         F = interpolation_function(interpolation_data)
 
         distance = []
@@ -47,18 +54,11 @@ def interpolate_lagrange(k):
         for point in interpolation_data:
             x, y = point
             train_distance.append(float(x))
-            # train_h.append(F(float(x)))
             train_h.append(float(y))
-        
-        # komentarz - aproksymacja bez oscylacji
-        # n = math.floor(len(distance)/3)
-        # pyplot.plot(distance[n::2*n], h[n::2*n], 'r.', label="pelne dane")
-        # pyplot.plot(distance[n::2*n], interpolated_h[n::2*n], color="blue", label="funkcja interpolujaca")
-        # pyplot.plot(train_distance[n::2*n], train_h[n::2*n], 'g.', label="dane do interpolacji")
 
-        pyplot.semilogy(distance, h, 'r.', label="pelne dane")
-        pyplot.semilogy(distance, interpolated_h, color="blue", label="funkcja interpolujaca")
-        pyplot.semilogy(train_distance, train_h, 'g.', label="dane do interpolacji")
+        pyplot.plot(distance, h, 'r.', label="pelne dane")
+        pyplot.plot(distance, interpolated_h, color="blue", label="funkcja interpolujaca")
+        pyplot.plot(train_distance, train_h, 'g.', label="dane do interpolacji")
 
         pyplot.legend()
         pyplot.ylabel("Wysokosc")
